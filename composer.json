@@ -1,0 +1,27 @@
+{
+  "name": "atlex/atlexcloud",
+  "type": "library",
+  "description": "AtlexCloud Library",
+  "keywords": ["openstack","swift","ftp","cloud"],
+  "homepage": "https://github.com/AtlexLib/atlexcloud.git",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Atlex.ru",
+      "email": "developer@atlex.ru"
+    }
+  ],
+  "require": {
+    "php": ">=5.3.0",
+    "php-opencloud/openstack": "^3.0",
+    "aws/aws-sdk-php": "2.8.31"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "4.3.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Atlex\\": "src/"
+    }
+  }
+}

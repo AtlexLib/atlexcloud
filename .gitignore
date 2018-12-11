@@ -1,0 +1,6 @@
+/vendor
+/src/Adapter
+/src/Cloud
+/tests/*
+.idea
+.composer.lock
