@@ -5,57 +5,95 @@ namespace Atlex;
 use Atlex\Adapter\CloudAdapter;
 
 
+
 class AtlexCloud extends CloudAdapter
 {
     private $adapter;
+
+
+    /**
+     * {@inheritdoc}
+     */
     public function __construct($adapter)
     {
         $this->adapter = $adapter;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function loadContainers()
     {
         return $this->adapter->loadContainers();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function loadObjects($path)
     {
         return $this->adapter->loadObjects($path);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function createContainer($name)
     {
         $this->adapter->createContainer($name);
     }
 
-    public function createContainerSub($name)
+    /**
+     * {@inheritdoc}
+     */
+    public function setObject($path, $content, $createContainer = true)
     {
-        $this->adapter->createContainerSub($name);
+        $this->adapter->setObject($path, $content, $createContainer);
     }
 
-    public function setObject($path, $content)
+    /**
+     * {@inheritdoc}
+     */
+    public function getObject($path, $handle = null)
     {
-        $this->adapter->setObject($path, $content);
+        $this->adapter->getObject($path, $handle);
     }
 
-    public function getObject($path)
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteObject($path)
     {
-        $this->adapter->getObject($path);
+        $this->adapter->deleteObject($path);
     }
 
-    public function list($path = "")
+    /**
+     * {@inheritdoc}
+     */
+    public function get($path = "")
     {
-        return $this->adapter->list($path);
+        return $this->adapter->get($path);
     }
 
-    public function listAll($path)
-    {
-        return $this->adapter->listAll($path);
-    }
+    //public function listAll($path)
+    //{
+        //return $this->adapter->listAll($path);
+    //}
 
+    /**
+     * {@inheritdoc}
+     */
     public function download($object, $localDir)
     {
         return $this->adapter->download($object, $localDir);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function upload($localPath, $remotePath)
+    {
+        return $this->adapter->upload($localPath, $remotePath);
     }
 
 
