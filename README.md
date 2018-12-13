@@ -1,17 +1,14 @@
-Instalation
+### Installing
 
 composer require atlex/atlexcloud
 
+### Example
 
 
 
+```
+<?php 
 
-
-
-
-
-____________________________________________________________________________
-Example
 
 require "../vendor/autoload.php";
 
@@ -120,3 +117,9 @@ $remoteCloud->upload($localDir . DIRECTORY_SEPARATOR . "local-test-container", "
 /*
 $remoteCloud->deleteObject($containerName . "/subdir/test.txt");
  */
+
+```
+
+## Authors
+
+Atlex.ru
