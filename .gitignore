@@ -1,3 +1,5 @@
 /vendor
+/tests/index.php
+/tests/local/
 .idea
-.composer.lock
+composer.lock
