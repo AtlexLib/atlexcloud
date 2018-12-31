@@ -32,7 +32,7 @@ class FtpAdapter extends CloudUtils
 
 
     }
-    
+
 
     function __destruct()
     {
@@ -315,7 +315,7 @@ class FtpAdapter extends CloudUtils
         $path = trim($path, "/");
 
         if (!ftp_chdir($this->ftpConnection, $this->ftpRoot . $path)) {
-            throw new Atlex\Cloud\Exception\ContainerNotExistsException();
+            throw new Atlex\Cloud\Exception\ContainerNotExistsException($path);
         }
         $contents = ftp_rawlist ($this->ftpConnection, ".");
 

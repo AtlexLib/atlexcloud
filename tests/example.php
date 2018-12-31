@@ -26,6 +26,26 @@ $remoteCloud = new AtlexCloud(
 
 $containerName = "test-container";
 
+
+/** @var \Atlex\Cloud\CloudCollection $containers */
+$containers = $remoteCloud->get("");
+
+echo "List of containers<br>";
+
+$local_path = "local/all_containers";
+if(!file_exists($local_path))
+    mkdir($local_path, 0777);
+
+/** @var \Atlex\Cloud\CloudObject $containerObject */
+foreach($containers as $containerObject){
+    echo 'Object :' . $containerObject->getName() . " Type:".$containerObject->getType()."<br>";
+    //$containerObject->downloadTo($local_path);
+}
+
+
+
+
+
 /*
 Create a container with only alphanumeric lower case characters, available symbols "-" "." minimum length 3 symbols
 Example:
@@ -65,10 +85,12 @@ if( is_file($fileName) && is_readable($fileName) )
 $content = $remoteCloud->getObject($containerName . "/subdir/test.txt");
 echo $containerName . "/subdir/test.txt" . " object content:" . $content;
 
+
 // Write object content to local file
 try{
-    $file = fopen($localDir."/some-file.jpeg", "w+");
-    $remoteCloud->getObject($containerName . "/download.jpeg", $file );
+    $file = fopen($localDir."/some-file2.jpeg", "w+");
+    $remoteCloud->getObject($containerName . "/subdir/download.jpeg", $file );
+
 
 }catch(Exception $e){
 
@@ -91,7 +113,7 @@ if(!file_exists($local_path))
 /** @var \Atlex\Cloud\CloudObject $containerObject */
 foreach($containers as $containerObject){
     echo 'Container:' . $containerObject->getName() . "<br>";
-    $containerObject->downloadTo($local_path);
+    //$containerObject->downloadTo($local_path);
 }
 
 
@@ -106,8 +128,7 @@ $remoteCloud->get("test-container")->downloadTo($localDir . DIRECTORY_SEPARATOR 
 
 // Recursive directory upload to remote cloud
 // upload local/local-test-container to remote upload-container/upload-test-container/somedir
-
-//$remoteCloud->upload($localDir . DIRECTORY_SEPARATOR . "local-test-container", "upload-container88888/upload-test-container/somedir");
+$remoteCloud->upload($localDir . DIRECTORY_SEPARATOR . "local-test-container", "upload-container/upload-test-container/somedir");
 
 //Delete remote object
 /*
