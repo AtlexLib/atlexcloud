@@ -35,7 +35,7 @@ class FtpAdapter extends CloudUtils
 
     function __destruct()
     {
-        //ftp_close($this->ftpConnection);
+        ftp_close($this->ftpConnection);
     }
 
 
