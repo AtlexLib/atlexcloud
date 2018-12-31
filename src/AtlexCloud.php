@@ -19,21 +19,7 @@ class AtlexCloud extends CloudAdapter
         $this->adapter = $adapter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadContainers()
-    {
-        return $this->adapter->loadContainers();
-    }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadObjects($path)
-    {
-        return $this->adapter->loadObjects($path);
-    }
 
     /**
      * {@inheritdoc}
@@ -56,7 +42,7 @@ class AtlexCloud extends CloudAdapter
      */
     public function getObject($path, $handle = null)
     {
-        $this->adapter->getObject($path, $handle);
+        return $this->adapter->getObject($path, $handle);
     }
 
     /**
@@ -75,10 +61,6 @@ class AtlexCloud extends CloudAdapter
         return $this->adapter->get($path);
     }
 
-    //public function listAll($path)
-    //{
-        //return $this->adapter->listAll($path);
-    //}
 
     /**
      * {@inheritdoc}

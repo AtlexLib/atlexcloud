@@ -9,6 +9,7 @@ use Atlex\AtlexCloud;
 
 use Atlex\Adapter\S3Adapter;
 use Atlex\Adapter\OpenStackAdapter;
+use Atlex\Adapter\FtpAdapter;
 
 // local directory with writable permission
 $localDir = "local";
@@ -20,6 +21,7 @@ $localDir = "local";
 $remoteCloud = new AtlexCloud(
     new S3Adapter('{url}', '{key}', '{secret}') // Amazon AWS SDK
     //new OpenStackAdapter('{url}', '{user}', '{password}', '{project}') // OpenStack PHP SDK
+    //new FtpAdapter('{host}', '{user}','{password}') //FTPAdapter
 );
 
 $containerName = "test-container";
@@ -104,7 +106,8 @@ $remoteCloud->get("test-container")->downloadTo($localDir . DIRECTORY_SEPARATOR 
 
 // Recursive directory upload to remote cloud
 // upload local/local-test-container to remote upload-container/upload-test-container/somedir
-$remoteCloud->upload($localDir . DIRECTORY_SEPARATOR . "local-test-container", "upload-container/upload-test-container/somedir");
+
+//$remoteCloud->upload($localDir . DIRECTORY_SEPARATOR . "local-test-container", "upload-container88888/upload-test-container/somedir");
 
 //Delete remote object
 /*

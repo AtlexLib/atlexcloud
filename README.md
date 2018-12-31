@@ -4,16 +4,12 @@ composer require atlex/atlexcloud
 
 ### Example
 
-
-
 ```
 <?php 
-
 
 require "../vendor/autoload.php";
 
 use Atlex\AtlexCloud;
-
 use Atlex\Adapter\S3Adapter;
 use Atlex\Adapter\OpenStackAdapter;
 

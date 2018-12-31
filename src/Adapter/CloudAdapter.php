@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: nix
- * Date: 11/20/18
- * Time: 11:26 PM
- */
 
 namespace Atlex\Adapter;
 
@@ -14,9 +8,7 @@ use Atlex;
 
 abstract class CloudAdapter
 {
-    abstract public function loadContainers();
 
-    abstract public function loadObjects($path);
 
     /**
      * Get objects collection
@@ -92,7 +84,7 @@ abstract class CloudAdapter
      * @param string $path remote path of object {container}/name or {container}/subdir/subdir/name
      * @param resource $handle = null file handle
      *
-     * @return mixed
+     * @return ?string
      */
     abstract public function getObject($path, $handle = null);
 

@@ -50,22 +50,6 @@ class S3Adapter extends CloudUtils
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadContainers()
-    {
-        $list = [];
-        $result = $this->client->listBuckets();
-
-        foreach($result['Buckets'] as $container){
-            $list[] = $container['Name'];
-        }
-
-        return $list;
-    }
-
-
 
 
     /**
@@ -97,22 +81,6 @@ class S3Adapter extends CloudUtils
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadObjects($path)
-    {
-        $pathInfo = $this->parsePath($path);
-        echo 'path:'.$pathInfo['container'];
-        $iterator = $this->client->getIterator('ListObjects', array(
-            'Bucket' => $pathInfo['container'],
-            'PathStyle' => true
-        ));
-
-        foreach ($iterator as $object) {
-            echo $object['Key'] . "<br>\n";
-        }
-    }
 
 
     /**

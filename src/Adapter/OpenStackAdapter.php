@@ -59,46 +59,7 @@ class OpenStackAdapter extends CloudUtils
 
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadContainers()
-    {
-        $list = array();
-        $service = $this->openstack->objectStoreV1();
-        foreach ($service->listContainers() as $container) {
 
-            //$containerInfo = $service->getContainer($container->name);
-            //$containerInfo->retrieve();
-            //var_dump($containerInfo);
-            //echo '<hr>';
-            $list[] = $container->name ;
-        }
-
-        return $list;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function loadObjects($path)
-    {
-        $pathInfo = $this->parsePath($path);
-        echo 'path:'.$pathInfo['container'];
-        $container = $this->openstack->objectStoreV1(['catalogName' => 'swift/'.$path, 'catalogType' => 'object-store'])
-            ->getContainer($pathInfo['container']);
-
-        $params = array(
-            'name' => '/sub1'
-        );
-
-        foreach ($container->listObjects() as $object) {
-            //echo $object['name']."<br><br>";
-            var_export($object->name);
-
-            echo '<hr>';
-        }
-    }
 
     /**
      * {@inheritdoc}
@@ -164,6 +125,7 @@ class OpenStackAdapter extends CloudUtils
                 ];
             }
         }
+
         return $objects;
     }
 
@@ -213,9 +175,6 @@ class OpenStackAdapter extends CloudUtils
         }catch(OpenStack\Common\Error\BadResponseError $err){
             throw new CloudException($err->getResponse()->getReasonPhrase());
         }
-
-
-
 
     }
 

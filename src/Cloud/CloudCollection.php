@@ -65,7 +65,6 @@ class CloudCollection implements \Iterator
     public function delete()
     {
         foreach ($this->container as $object){
-            echo "delete " . $object->getPath()."<hr>";
             $object->delete();
         }
         $this->container = [];

@@ -38,6 +38,7 @@ abstract class CloudUtils extends CloudAdapter
         } else {
 
             $fullPath = $container . "/" . $objName;
+
             if (strpos($fullPath, $path, 0) === 0 && $fullPath != $path) {
 
                 $parentLevel = count(explode("/", $path));
@@ -94,7 +95,7 @@ abstract class CloudUtils extends CloudAdapter
     protected function checkContainerName($name)
     {
 
-        if(strlen($name) >= 3 && preg_match('/^[a-z0-9]+[\d.-]+[a-z0-9\d.-]+$/i', $name)) {
+        if(strlen($name) >= 3 && preg_match('/^[a-z0-9]+[\d.-]?[a-z0-9\d.-]+$/', $name)) {
             return true;
         }
 
