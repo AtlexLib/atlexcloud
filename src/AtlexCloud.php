@@ -56,6 +56,14 @@ class AtlexCloud extends CloudAdapter
     /**
      * {@inheritdoc}
      */
+    public function deleteContainer($path)
+    {
+        $this->adapter->deleteContainer($path);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function get($path = "")
     {
         return $this->adapter->get($path);
@@ -78,5 +86,11 @@ class AtlexCloud extends CloudAdapter
         return $this->adapter->upload($localPath, $remotePath);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getLocalFiles($dir, &$results = array()){
+        return $this->adapter->getLocalFiles($dir, $results);
+    }
 
 }

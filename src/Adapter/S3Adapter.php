@@ -37,16 +37,54 @@ class S3Adapter extends CloudUtils
      */
     public function createContainer($name)
     {
+
+
         $name = trim($name);
-        if($this->checkContainerName($name)) {
-            try {
-                $this->client->createBucket(array('Bucket' => $name, 'PathStyle' => true));
-            } catch (\Aws\S3\Exception\S3Exception $e) {
-                if( $e->getAwsErrorCode() != "BucketAlreadyExists")
-                    throw new CloudException($e->getMessage() . " " . $e->getAwsErrorCode());
+        $path = trim($name, "/");
+        $pathInfo = $this->parsePath($path);
+
+        if(strpos($path, "/") === false) {
+            if ($this->checkContainerName($name)) {
+                try {
+                    $this->client->createBucket(array('Bucket' => $name, 'PathStyle' => true));
+                } catch (\Aws\S3\Exception\S3Exception $e) {
+                    if ($e->getAwsErrorCode() != "BucketAlreadyExists")
+                        throw new CloudException($e->getMessage() . " " . $e->getAwsErrorCode());
+                }
+            } else {
+                throw new NotValidContainerNameException();
             }
-        }else{
-            throw new NotValidContainerNameException();
+        } else {
+
+            try {
+
+                $this->client->putObject(array(
+                    'Bucket' => $pathInfo['container'],
+                    'Key' => $pathInfo['name'],
+                    'Body' => '',
+                    'ContentType' => 'application/directory',
+                    'PathStyle' => true
+                ));
+
+            }catch(\Aws\S3\Exception\S3Exception $e){
+                if( $e->getAwsErrorCode() == "NoSuchBucket" ){
+                    $this->createContainer($pathInfo['container']);
+                    $this->client->putObject(array(
+                        'Bucket' => $pathInfo['container'],
+                        'Key' => $pathInfo['name'],
+                        'Body' => '',
+                        'ContentType' => 'application/directory',
+                        'PathStyle' => true
+                    ));
+                }else if( $e->getAwsErrorCode() == "NoSuchBucket") {
+                    throw new Atlex\Cloud\Exception\ContainerNotExistsException($pathInfo['container']);
+                }else{
+                    throw new CloudException($e->getMessage() . " " . $e->getAwsErrorCode());
+                }
+            }
+
+
+
         }
     }
 
@@ -118,6 +156,47 @@ class S3Adapter extends CloudUtils
             'Key' => $pathInfo['name'],
             'PathStyle' => true
         ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteContainer($path)
+    {
+
+        if($path == ""){
+
+            throw new Atlex\Cloud\Exception\IncorrectPathException($path);
+
+        } else {
+
+            $list = $this->listAll($path);
+
+            foreach ($list as $object) {
+                try {
+                    $this->deleteObject($object["path"]);
+                }catch(\Exception $e){
+
+                }
+            }
+
+            try {
+                if(strpos($path, "/") === false) {
+                    $this->client->deleteBucket(array(
+                        'Bucket' => $path,
+                        'PathStyle' => true
+                    ));
+                }else{
+                    $this->deleteObject($path);
+                }
+
+            }catch(\Exception $e){
+
+            }
+
+        }
+
+
     }
 
     /**
@@ -233,7 +312,7 @@ class S3Adapter extends CloudUtils
 
         $iterator = $this->client->getIterator('ListObjects', array(
             'Bucket' => $pathInfo['container'],
-            //'Prefix' => $pathInfo['name']."/",
+            'Prefix' => $pathInfo['name'],
             'PathStyle' => true
         ));
 
@@ -273,13 +352,18 @@ class S3Adapter extends CloudUtils
      */
     public function upload($localPath, $remotePath)
     {
-        $localPath = trim($localPath, DIRECTORY_SEPARATOR);
+        $localPath = rtrim($localPath, DIRECTORY_SEPARATOR);
         $remotePath = trim($remotePath, DIRECTORY_SEPARATOR);
 
         $files = $this->getLocalFiles($localPath);
         foreach($files as $file)
         {
-            $this->setObject($remotePath . "/" . $this->createObjectName($localPath, $file), fopen($file, "r"));
+
+            if($file["type"] == "file"){
+                $this->setObject($remotePath . "/" . $this->createObjectName($localPath, $file["path"]), fopen($file["path"], "r"));
+            } else if($file["type"] == "dir"){
+                $this->createContainer($remotePath . "/" . $this->createObjectName($localPath, $file["path"]));
+            }
         }
     }
 }

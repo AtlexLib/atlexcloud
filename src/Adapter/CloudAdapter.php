@@ -69,6 +69,15 @@ abstract class CloudAdapter
      */
     abstract public function deleteObject($path);
 
+    /**
+     * Delete remote cloud container
+     *
+     *
+     * @param string $path remote path of container {container}/name or {container}/subdir/subdir/name
+     * @throws CloudException
+     */
+    abstract public function deleteContainer($path);
+
 
     /**
      * Get remote object content or write to file

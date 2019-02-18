@@ -18,6 +18,8 @@ $localDir = "local";
 // Create cloud object
 // Choose adapter for AtlexCloud
 // Amazon AWS SDK or OpenStack PHP SDK
+//
+/** @var \Atlex\Adapter\CloudAdapter $remoteCloud */
 $remoteCloud = new AtlexCloud(
     new S3Adapter('{url}', '{key}', '{secret}') // Amazon AWS SDK
     //new OpenStackAdapter('{url}', '{user}', '{password}', '{project}') // OpenStack PHP SDK

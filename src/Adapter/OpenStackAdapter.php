@@ -46,15 +46,45 @@ class OpenStackAdapter extends CloudUtils
     public function createContainer($name)
     {
         $name = trim($name);
-        if($this->checkContainerName($name)) {
-            try {
-                $service = $this->openstack->objectStoreV1();
-                $service->createContainer(['name' => $name]);
-            } catch (OpenStack\Common\Error\BadResponseError $e) {
-                throw new CloudException($e->getResponse()->getReasonPhrase());
+        $path = trim($name, "/");
+        $pathInfo = $this->parsePath($path);
+
+        if(strpos($path, "/") === false) {
+
+            if ($this->checkContainerName($pathInfo["container"])) {
+                try {
+                    $service = $this->openstack->objectStoreV1();
+                    $service->createContainer(['name' => $pathInfo["container"]]);
+                } catch (OpenStack\Common\Error\BadResponseError $e) {
+                    throw new CloudException($e->getResponse()->getReasonPhrase());
+                }
+            } else {
+                throw new NotValidContainerNameException();
             }
-        }else{
-            throw new NotValidContainerNameException();
+        }else {
+
+            $options = [
+                'name' => $pathInfo['name'],
+                'contentType' => 'application/directory'
+            ];
+
+            $container = $this->openstack->objectStoreV1()->getContainer($pathInfo['container']);
+            try {
+                $container->retrieve();
+            } catch (OpenStack\Common\Error\BadResponseError $e) {
+                if($e->getResponse()->getStatusCode() == 404 ) {
+                    $this->createContainer($pathInfo['container']);
+                }else if($e->getResponse()->getStatusCode() == 404){
+                    throw new Atlex\Cloud\Exception\ContainerNotExistsException($pathInfo['container']);
+                }else{
+                    throw new CloudException($e->getResponse()->getReasonPhrase());
+                }
+            }
+
+
+
+            $container->createObject($options);
+
         }
 
     }
@@ -71,6 +101,9 @@ class OpenStackAdapter extends CloudUtils
         if($path == ""){
             $service = $this->openstack->objectStoreV1();
             foreach ($service->listContainers() as $container) {
+
+                if((substr($container->name, -strlen("_segments")) === "_segments"))
+                    continue;
 
                 $this->addCollectionObject(
                     $container->name ,
@@ -211,6 +244,45 @@ class OpenStackAdapter extends CloudUtils
             ->delete();
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteContainer($path)
+    {
+
+
+        if($path == ""){
+
+            throw new Atlex\Cloud\Exception\IncorrectPathException($path);
+
+        } else {
+
+            $list = $this->listAll($path);
+
+            foreach ($list as $object) {
+                try {
+                    $this->deleteObject($object["path"]);
+                } catch (\Exception $e) {
+
+                }
+            }
+
+            try {
+                if(strpos($path, "/") === false) {
+                    $this->openstack->objectStoreV1()
+                        ->getContainer($path)
+                        ->delete();
+
+                } else {
+                    $this->deleteObject($path);
+                }
+            } catch (\Exception $e) {
+
+            }
+
+        }
+    }
+
 
     /**
      * {@inheritdoc}
@@ -275,13 +347,17 @@ class OpenStackAdapter extends CloudUtils
      */
     public function upload($localPath, $remotePath)
     {
-        $localPath = trim($localPath, DIRECTORY_SEPARATOR);
+        $localPath = rtrim($localPath, DIRECTORY_SEPARATOR);
         $remotePath = trim($remotePath, DIRECTORY_SEPARATOR);
 
         $files = $this->getLocalFiles($localPath);
         foreach($files as $file)
         {
-            $this->setObject($remotePath . "/" . $this->createObjectName($localPath, $file), fopen($file, "r"));
+            if($file["type"] == "file"){
+                $this->setObject($remotePath . "/" . $this->createObjectName($localPath, $file["path"]), fopen($file["path"], "r"));
+            } else if($file["type"] == "dir"){
+                $this->createContainer($remotePath . "/" . $this->createObjectName($localPath, $file["path"]));
+            }
         }
     }
 }

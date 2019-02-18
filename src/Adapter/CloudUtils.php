@@ -77,7 +77,7 @@ abstract class CloudUtils extends CloudAdapter
         if(DIRECTORY_SEPARATOR != "\\")
         $localDir = str_replace("\\", DIRECTORY_SEPARATOR, $localDir);
 
-        return trim($localDir, DIRECTORY_SEPARATOR);
+        return rtrim($localDir, DIRECTORY_SEPARATOR);
     }
 
     protected function getRelativePath($object)
@@ -112,6 +112,8 @@ abstract class CloudUtils extends CloudAdapter
         $currentDir = $pathParts[0];
         for($i = 0; $i < $count; $i++)
         {
+            if($pathParts[$i] == "")
+                continue;
             $dir = $pathParts[$i];
 
             if($i == 0)
@@ -125,19 +127,20 @@ abstract class CloudUtils extends CloudAdapter
         }
     }
 
-    protected function getLocalFiles($dir, &$results = array()){
+    public function getLocalFiles($dir, &$results = array()){
 
-        $files = scandir($dir);
+        $files = scandir("/".$dir);
 
         foreach($files as $key => $value){
             //$path = realpath($dir.DIRECTORY_SEPARATOR.$value);
             $path = $dir.DIRECTORY_SEPARATOR.$value;
             if(!is_dir($path)) {
-                $results[] = $path;
+                $results[] = ['path' => $path, 'type' => 'file'];
             } else if($value != "." && $value != "..") {
+                $results[] = ['path' => $path, 'type' => 'dir'];
                 $this->getLocalFiles($path, $results);
                 if(!is_dir($path))
-                    $results[] = $path;
+                    $results[] = ['path' => $path, 'type' => 'file'];;
             }
         }
 

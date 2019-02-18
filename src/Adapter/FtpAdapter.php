@@ -32,7 +32,7 @@ class FtpAdapter extends CloudUtils
 
 
     }
-
+    
 
     function __destruct()
     {
@@ -55,6 +55,14 @@ class FtpAdapter extends CloudUtils
             $ftpPath = ".";
 
         $list = $this->listAll($ftpPath);
+        usort($list, function ($a, $b)
+        {
+            if ($a['type'] == $b['type']) {
+                return $a['name'] > $b['name'];
+            } else {
+                return $a['type'] > $b['type'];
+            }
+        });
 
         foreach ($list as $object) {
             if ($path == "") {
@@ -90,11 +98,21 @@ class FtpAdapter extends CloudUtils
      */
     public function createContainer($name)
     {
+
         $name = trim($name);
-        if($this->checkContainerName($name)) {
-            ftp_mkdir($this->ftpConnection, $this->ftpRoot . $name);
-        }else{
-            throw new NotValidContainerNameException();
+        $name = rtrim($name, "/");
+
+
+        if(strpos($name, "/") > 0)
+        {
+            $this->createFtpPath($name . "/");
+        } else {
+            
+            if ($this->checkContainerName($name)) {
+                ftp_mkdir($this->ftpConnection, $this->ftpRoot . $name);
+            } else {
+                throw new NotValidContainerNameException();
+            }
         }
 
     }
@@ -106,8 +124,6 @@ class FtpAdapter extends CloudUtils
     public function setObject($path, $content, $createContainer = true)
     {
         $pathInfo = $this->parsePath($path);
-
-
 
         if($pathInfo['name'] == "")
             throw new Atlex\Cloud\Exception\NotValidObjectNameException();
@@ -167,14 +183,20 @@ class FtpAdapter extends CloudUtils
 
         $remotePath = $this->ftpRoot;
         $dirs = explode("/", $path);
-        for($iter = 0; $iter < count($dirs);  $iter++)
+
+
+        for($iter = 0; $iter < count($dirs) - 1;  $iter++)
         {
+            if($dirs[$iter] == "")
+                continue;
+
+            $remotePath .= $dirs[$iter] . "/";
+            
             $ftp_files = @ftp_nlist($this->ftpConnection, $remotePath);
             if ($ftp_files === false) {
                 ftp_mkdir($this->ftpConnection, $remotePath);
             }
 
-            $remotePath .= $dirs[$iter] . "/";
         }
 
     }
@@ -186,6 +208,31 @@ class FtpAdapter extends CloudUtils
     public function deleteObject($path)
     {
         ftp_delete($this->ftpConnection , $this->ftpRoot . $path);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteContainer($path)
+    {
+        $this->ftp_remove_r($this->ftpRoot . $path);
+    }
+
+    private function ftp_remove_r ($path) {
+
+        if (@ftp_delete($this->ftpConnection, $path) === false) {
+
+            if ($files = ftp_nlist($this->ftpConnection, $path)) {
+                foreach ($files as $file)
+                {
+                    @ftp_delete($this->ftpConnection, $path. "/" . $file);
+                    $this->ftp_remove_r($path . "/" . $file);
+                }
+
+            }
+
+            @ftp_rmdir($this->ftpConnection, $path);
+        }
     }
 
 
@@ -246,13 +293,20 @@ class FtpAdapter extends CloudUtils
     public function upload($localPath, $remotePath)
     {
 
-        $localPath = trim($localPath, DIRECTORY_SEPARATOR);
+        $localPath = rtrim($localPath, DIRECTORY_SEPARATOR);
         $remotePath = trim($remotePath, DIRECTORY_SEPARATOR);
 
         $files = $this->getLocalFiles($localPath);
         foreach($files as $file)
         {
-            $this->setObject($remotePath . "/" . $this->createObjectName($localPath, $file), fopen($file, "r"));
+            if($file["type"] == "file"){
+                $this->setObject($remotePath . "/" . $this->createObjectName($localPath, $file["path"]), fopen($file["path"], "r"));
+            } else if($file["type"] == "dir"){
+
+                //$this->createFtpPath($this->createObjectName($localPath, $file["path"]) . "/");
+                $this->createContainer($remotePath . "/" . $this->createObjectName($localPath, $file["path"]));
+            }
+
         }
     }
 
@@ -315,7 +369,7 @@ class FtpAdapter extends CloudUtils
         $path = trim($path, "/");
 
         if (!ftp_chdir($this->ftpConnection, $this->ftpRoot . $path)) {
-            throw new Atlex\Cloud\Exception\ContainerNotExistsException($path);
+            throw new Atlex\Cloud\Exception\ContainerNotExistsException();
         }
         $contents = ftp_rawlist ($this->ftpConnection, ".");
 
